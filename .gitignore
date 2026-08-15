@@ -1,0 +1,13 @@
+.env
+
+# Go
+/bin/
+/tmp/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
