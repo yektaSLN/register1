@@ -8,17 +8,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//getting the setting and handler methods and returning the main router of gin
+func SetupRouter(
+	cfg *config.Config,
+	authHandler *handler.AuthHandler,
+	productHandler *handler.ProductHandler,
+) *gin.Engine {
 
-func SetupRouter(cfg *config.Config, authHandler *handler.AuthHandler) *gin.Engine {
-
-	//release mode is set for production and it dowsnt show extra debug messages
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
 
-	//logger used for debugging and recovery for server stability
-	router.Use(gin.Logger(), gin.Recovery())
+	router.Use(
+		gin.Logger(),
+		gin.Recovery(),
+	)
 
 	api := router.Group("/api")
 
@@ -34,6 +37,16 @@ func SetupRouter(cfg *config.Config, authHandler *handler.AuthHandler) *gin.Engi
 	users.Use(middleware.AuthMiddleware(cfg.JWTSecret))
 	{
 		users.GET("/me", authHandler.GetMe)
+	}
+
+	products := api.Group("/products")
+	products.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+	{
+		products.POST("", productHandler.Create)
+		products.GET("", productHandler.GetAll)
+		products.GET("/:id", productHandler.GetByID)
+		products.PUT("/:id", productHandler.Update)
+		products.DELETE("/:id", productHandler.Delete)
 	}
 
 	return router

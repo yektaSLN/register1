@@ -9,14 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func Connect(cfg *config.Config) (*gorm.DB, error) {
+func Connect(cfg *config.Config, dbName string) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.DBHost,
 		cfg.DBPort,
 		cfg.DBUser,
 		cfg.DBPassword,
-		cfg.DBName,
+		dbName,
 		cfg.DBSSLMode,
 	)
 

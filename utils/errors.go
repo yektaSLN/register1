@@ -27,6 +27,12 @@ var (
 		StatusCode: http.StatusNotFound,
 	}
 
+	ErrProductNotFound = &AppError{
+		Code:       "PRODUCT_NOT_FOUND",
+		Message:    "product not found",
+		StatusCode: http.StatusNotFound,
+	}
+
 	ErrInvalidCredentials = &AppError{
 		Code:       "INVALID_CREDENTIALS",
 		Message:    "invalid username or password",
