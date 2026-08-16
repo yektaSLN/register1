@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"login/dto"
 	"login/models"
 	"login/service"
 	"login/utils"
@@ -16,22 +17,10 @@ type ProductHandler struct {
 	productService service.ProductService
 }
 
-func NewProductHandler(
-	productService service.ProductService,
-) *ProductHandler {
+func NewProductHandler(productService service.ProductService) *ProductHandler {
 	return &ProductHandler{
 		productService: productService,
 	}
-}
-
-type createProductRequest struct {
-	Name  string  `json:"name" binding:"required"`
-	Price float64 `json:"price" binding:"gte=0"`
-}
-
-type updateProductRequest struct {
-	Name  string  `json:"name" binding:"required"`
-	Price float64 `json:"price" binding:"gte=0"`
 }
 
 func (h *ProductHandler) Create(c *gin.Context) {
@@ -43,7 +32,7 @@ func (h *ProductHandler) Create(c *gin.Context) {
 		return
 	}
 
-	var request createProductRequest
+	var request dto.CreateProductRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
 		h.handleError(c, utils.ErrInvalidRequest)
@@ -67,53 +56,40 @@ func (h *ProductHandler) Create(c *gin.Context) {
 }
 
 func (h *ProductHandler) GetAll(c *gin.Context) {
-
 	userID, ok := getUserID(c)
-
 	if !ok {
 		h.handleError(c, utils.ErrInvalidToken)
 		return
 	}
-
 	products, err := h.productService.GetAll(userID)
-
 	if err != nil {
 		h.handleError(c, err)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
 		"products": products,
 	})
 }
-
 func (h *ProductHandler) GetByID(c *gin.Context) {
-
 	userID, ok := getUserID(c)
-
 	if !ok {
 		h.handleError(c, utils.ErrInvalidToken)
 		return
 	}
-
 	productID, err := getProductID(c)
-
 	if err != nil {
 		h.handleError(c, utils.ErrInvalidRequest)
 		return
 	}
-
 	product, err := h.productService.GetByID(
 		userID,
 		productID,
 	)
-
 	if err != nil {
 		h.handleError(c, err)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"product": product,
@@ -121,33 +97,26 @@ func (h *ProductHandler) GetByID(c *gin.Context) {
 }
 
 func (h *ProductHandler) Update(c *gin.Context) {
-
 	userID, ok := getUserID(c)
-
 	if !ok {
 		h.handleError(c, utils.ErrInvalidToken)
 		return
 	}
-
 	productID, err := getProductID(c)
-
 	if err != nil {
 		h.handleError(c, utils.ErrInvalidRequest)
 		return
 	}
-
-	var request updateProductRequest
+	var request dto.UpdateProductRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
 		h.handleError(c, utils.ErrInvalidRequest)
 		return
 	}
-
 	product := &models.Product{
 		Name:  request.Name,
 		Price: request.Price,
 	}
-
 	if err := h.productService.Update(
 		userID,
 		productID,
@@ -174,21 +143,16 @@ func (h *ProductHandler) Update(c *gin.Context) {
 }
 
 func (h *ProductHandler) Delete(c *gin.Context) {
-
 	userID, ok := getUserID(c)
-
 	if !ok {
 		h.handleError(c, utils.ErrInvalidToken)
 		return
 	}
-
 	productID, err := getProductID(c)
-
 	if err != nil {
 		h.handleError(c, utils.ErrInvalidRequest)
 		return
 	}
-
 	if err := h.productService.Delete(
 		userID,
 		productID,
@@ -196,7 +160,6 @@ func (h *ProductHandler) Delete(c *gin.Context) {
 		h.handleError(c, err)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "product deleted successfully",
@@ -233,10 +196,7 @@ func getProductID(c *gin.Context) (uint, error) {
 	return uint(productID), nil
 }
 
-func (h *ProductHandler) handleError(
-	c *gin.Context,
-	err error,
-) {
+func (h *ProductHandler) handleError(c *gin.Context, err error) {
 
 	var appErr *utils.AppError
 
