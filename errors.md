@@ -1,0 +1,10 @@
+User Not Found      = 1001
+Product Not Found   = 1002
+Invalid Credential  = 1003
+Username Exists     = 1004
+Email Exists        = 1005
+Phone Exists        = 1006
+Invalid Token       = 1007
+Internal Server     = 1008
+Invalid Request     = 1009
+validation error    = 1010

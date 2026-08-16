@@ -1,7 +1,11 @@
 package service
 
 import (
+	"context"         // *
+	"crypto/rand"     // *
+	"encoding/base64" // *
 	"errors"
+	"time" // *
 
 	"login/dto"
 	"login/models"
@@ -10,12 +14,14 @@ import (
 	"login/validator"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/redis/go-redis/v9" // *
 	"gorm.io/gorm"
 )
 
 type AuthService interface {
 	Register(request dto.RegisterRequest) (*dto.UserResponse, error)
 	Login(request dto.LoginRequest) (*dto.AuthResponse, error)
+	RefreshToken(request dto.RefreshTokenRequest) (*dto.AuthResponse, error) // *
 	ForgotPassword(request dto.ForgotPasswordRequest) (string, error)
 	ResetPassword(request dto.ResetPasswordRequest) error
 	GetUserByID(id uint) (*dto.UserResponse, error)
@@ -26,6 +32,7 @@ type authService struct {
 	jwtSecret      string
 	jwtExpiration  int
 	validator      *validator.Validator
+	redisClient    *redis.Client // *
 }
 
 // constructor
@@ -33,12 +40,14 @@ func NewAuthService(
 	userRepository repository.UserRepository,
 	jwtSecret string,
 	jwtExpiration int,
+	redisClient *redis.Client, // *
 ) AuthService {
 	return &authService{
 		userRepository: userRepository,
 		jwtSecret:      jwtSecret,
 		jwtExpiration:  jwtExpiration,
 		validator:      validator.New(),
+		redisClient:    redisClient, // *
 	}
 }
 
@@ -48,6 +57,7 @@ func (s *authService) Register(request dto.RegisterRequest) (*dto.UserResponse, 
 	request.Email = validator.NormalizeEmail(request.Email)
 	request.Phone = validator.NormalizePhone(request.Phone)
 
+	//using the new valitaion form
 	if err := s.validator.Validate(request); err != nil {
 		return nil, err
 	}
@@ -136,6 +146,69 @@ func (s *authService) Login(request dto.LoginRequest) (*dto.AuthResponse, error)
 		return nil, err
 	}
 
+	refreshToken, err := generateRefreshToken() // *
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.redisClient.Set(
+		context.Background(),
+		"refresh:"+refreshToken,
+		user.ID,
+		7*24*time.Hour,
+	).Err() // *
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.AuthResponse{
+		User: dto.UserResponse{
+			ID:       user.ID,
+			Username: user.Username,
+			Email:    user.Email,
+			Age:      user.Age,
+			Phone:    user.Phone,
+		},
+		Token:        token,
+		RefreshToken: refreshToken, // *
+	}, nil
+}
+
+// * RefreshToken creates a new access token using the refresh token stored in Redis.
+func (s *authService) RefreshToken(
+	request dto.RefreshTokenRequest,
+) (*dto.AuthResponse, error) {
+
+	userID, err := s.redisClient.Get(
+		context.Background(),
+		"refresh:"+request.RefreshToken,
+	).Uint64()
+
+	if err != nil {
+		return nil, utils.ErrInvalidToken
+	}
+
+	user, err := s.userRepository.FindByID(uint(userID))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, utils.ErrUserNotFound
+		}
+
+		return nil, err
+	}
+
+	token, err := utils.GenerateToken(
+		user.ID,
+		user.Username,
+		s.jwtSecret,
+		s.jwtExpiration,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.AuthResponse{
 		User: dto.UserResponse{
 			ID:       user.ID,
@@ -146,6 +219,17 @@ func (s *authService) Login(request dto.LoginRequest) (*dto.AuthResponse, error)
 		},
 		Token: token,
 	}, nil
+}
+
+// * Generates a secure random refresh token.
+func generateRefreshToken() (string, error) {
+	b := make([]byte, 32)
+
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+
+	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
 func (s *authService) ForgotPassword(request dto.ForgotPasswordRequest) (string, error) {

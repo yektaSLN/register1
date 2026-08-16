@@ -63,6 +63,27 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	})
 }
 
+// * RefreshToken handles requests for generating a new access token.
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	var request dto.RefreshTokenRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		h.handleError(c, utils.ErrInvalidRequest)
+		return
+	}
+
+	response, err := h.authService.RefreshToken(request)
+	if err != nil {
+		h.handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    response,
+	})
+}
+
 func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	var request dto.ForgotPasswordRequest
 

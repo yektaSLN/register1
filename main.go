@@ -7,6 +7,7 @@ import (
 	"login/database"
 	"login/handler"
 	"login/models"
+	"login/redis" // *
 	"login/repository"
 	"login/routes"
 	"login/service"
@@ -17,18 +18,16 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to load config:", err)
 	}
-	loginDB, err := database.Connect(
-		cfg,
-		cfg.DBName,
-	)
+
+	redisClient := redis.NewClient(cfg.RedisAddr) // *
+
+	loginDB, err := database.Connect(cfg, cfg.DBName)
 
 	if err != nil {
 		log.Fatal("failed to connect to login database:", err)
 	}
 
-	err = loginDB.AutoMigrate(
-		&models.User{},
-	)
+	err = loginDB.AutoMigrate(&models.User{})
 
 	if err != nil {
 		log.Fatal("failed to migrate login database:", err)
@@ -37,48 +36,35 @@ func main() {
 	userRepository := repository.NewUserRepository(
 		loginDB,
 	)
+
 	authService := service.NewAuthService(
 		userRepository,
 		cfg.JWTSecret,
 		cfg.JWTExpiration,
+		redisClient, // *
 	)
-	authHandler := handler.NewAuthHandler(
-		authService,
-	)
-	productDB, err := database.Connect(
-		cfg,
-		cfg.ProductDBName,
-	)
+
+	authHandler := handler.NewAuthHandler(authService)
+
+	productDB, err := database.Connect(cfg, cfg.ProductDBName)
 
 	if err != nil {
 		log.Fatal("failed to connect to products database:", err)
 	}
 
-	err = productDB.AutoMigrate(
-		&models.Product{},
-	)
+	err = productDB.AutoMigrate(&models.Product{})
 
 	if err != nil {
 		log.Fatal("failed to migrate products database:", err)
 	}
-	productRepository := repository.NewProductRepository(
-		productDB,
-	)
-	productService := service.NewProductService(
-		productRepository,
-	)
-	productHandler := handler.NewProductHandler(
-		productService,
-	)
-	router := routes.SetupRouter(
-		cfg,
-		authHandler,
-		productHandler,
-	)
-	log.Println(
-		"server is running on port",
-		cfg.ServerPort,
-	)
+
+	productRepository := repository.NewProductRepository(productDB)
+	productService := service.NewProductService(productRepository)
+	productHandler := handler.NewProductHandler(productService)
+
+	router := routes.SetupRouter(cfg, authHandler, productHandler)
+
+	log.Println("server is running on port", cfg.ServerPort)
 
 	if err := router.Run(":" + cfg.ServerPort); err != nil {
 		log.Fatal("failed to start server:", err)

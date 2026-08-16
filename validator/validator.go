@@ -27,7 +27,6 @@ func New() *Validator {
 		if len(password) < 8 {
 			return false
 		}
-
 		hasUpper, _ := regexp.MatchString(`[A-Z]`, password)
 		hasLower, _ := regexp.MatchString(`[a-z]`, password)
 		hasNumber, _ := regexp.MatchString(`[0-9]`, password)

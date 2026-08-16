@@ -19,6 +19,8 @@ type Config struct {
 
 	JWTSecret     string
 	JWTExpiration int
+	//adding redis
+	RedisAddr string
 }
 
 func Load() (*Config, error) {
@@ -38,7 +40,10 @@ func Load() (*Config, error) {
 		DBSSLMode:     getEnv("DB_SSLMODE", "disable"),
 
 		JWTSecret:     getEnv("JWT_SECRET", ""),
-		JWTExpiration: 24,
+		JWTExpiration: 10,
+
+		//adding redis
+		RedisAddr: getEnv("REDIS_ADDR", ""),
 	}, nil
 }
 
