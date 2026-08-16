@@ -3,7 +3,7 @@ package utils
 import "net/http"
 
 type AppError struct {
-	Code       string
+	Code       int
 	Message    string
 	StatusCode int
 }
@@ -12,9 +12,11 @@ func (e *AppError) Error() string {
 	return e.Message
 }
 
+//read the errors.md file
+
 func NewValidationError(message string) *AppError {
 	return &AppError{
-		Code:       "VALIDATION_ERROR",
+		Code:       1010,
 		Message:    message,
 		StatusCode: http.StatusBadRequest,
 	}
@@ -22,55 +24,55 @@ func NewValidationError(message string) *AppError {
 
 var (
 	ErrUserNotFound = &AppError{
-		Code:       "USER_NOT_FOUND",
+		Code:       1001,
 		Message:    "user not found",
 		StatusCode: http.StatusNotFound,
 	}
 
 	ErrProductNotFound = &AppError{
-		Code:       "PRODUCT_NOT_FOUND",
+		Code:       1002,
 		Message:    "product not found",
 		StatusCode: http.StatusNotFound,
 	}
 
 	ErrInvalidCredentials = &AppError{
-		Code:       "INVALID_CREDENTIALS",
+		Code:       1003,
 		Message:    "invalid username or password",
 		StatusCode: http.StatusUnauthorized,
 	}
 
 	ErrUsernameExists = &AppError{
-		Code:       "USERNAME_ALREADY_EXISTS",
+		Code:       1004,
 		Message:    "username already exists",
 		StatusCode: http.StatusConflict,
 	}
 
 	ErrEmailExists = &AppError{
-		Code:       "EMAIL_ALREADY_EXISTS",
+		Code:       1005,
 		Message:    "email already exists",
 		StatusCode: http.StatusConflict,
 	}
 
 	ErrPhoneExists = &AppError{
-		Code:       "PHONE_ALREADY_EXISTS",
+		Code:       1006,
 		Message:    "phone already exists",
 		StatusCode: http.StatusConflict,
 	}
 
 	ErrInvalidToken = &AppError{
-		Code:       "INVALID_TOKEN",
+		Code:       1007,
 		Message:    "invalid or expired token",
 		StatusCode: http.StatusUnauthorized,
 	}
 
 	ErrInternalServer = &AppError{
-		Code:       "INTERNAL_SERVER_ERROR",
+		Code:       1008,
 		Message:    "internal server error",
 		StatusCode: http.StatusInternalServerError,
 	}
 
 	ErrInvalidRequest = &AppError{
-		Code:       "INVALID_REQUEST",
+		Code:       1009,
 		Message:    "invalid request body",
 		StatusCode: http.StatusBadRequest,
 	}
@@ -79,7 +81,7 @@ var (
 type ErrorResponse struct {
 	Success bool `json:"success"`
 	Error   struct {
-		Code    string `json:"code"`
+		Code    int    `json:"code"`
 		Message string `json:"message"`
 	} `json:"error"`
 }
