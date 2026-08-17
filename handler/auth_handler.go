@@ -63,7 +63,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	})
 }
 
-// * RefreshToken handles requests for generating a new access token.
+// handling  requests for generating a new access token
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	var request dto.RefreshTokenRequest
 

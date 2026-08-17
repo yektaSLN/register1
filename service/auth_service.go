@@ -1,11 +1,11 @@
 package service
 
 import (
-	"context"         // *
-	"crypto/rand"     // *
-	"encoding/base64" // *
+	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
-	"time" // *
+	"time"
 
 	"login/dto"
 	"login/models"
@@ -14,7 +14,7 @@ import (
 	"login/validator"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/redis/go-redis/v9" // *
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -32,7 +32,7 @@ type authService struct {
 	jwtSecret      string
 	jwtExpiration  int
 	validator      *validator.Validator
-	redisClient    *redis.Client // *
+	redisClient    *redis.Client //*
 }
 
 // constructor
@@ -40,14 +40,14 @@ func NewAuthService(
 	userRepository repository.UserRepository,
 	jwtSecret string,
 	jwtExpiration int,
-	redisClient *redis.Client, // *
+	redisClient *redis.Client, //*
 ) AuthService {
 	return &authService{
 		userRepository: userRepository,
 		jwtSecret:      jwtSecret,
 		jwtExpiration:  jwtExpiration,
 		validator:      validator.New(),
-		redisClient:    redisClient, // *
+		redisClient:    redisClient, //*
 	}
 }
 
@@ -175,15 +175,9 @@ func (s *authService) Login(request dto.LoginRequest) (*dto.AuthResponse, error)
 	}, nil
 }
 
-// * RefreshToken creates a new access token using the refresh token stored in Redis.
-func (s *authService) RefreshToken(
-	request dto.RefreshTokenRequest,
-) (*dto.AuthResponse, error) {
-
-	userID, err := s.redisClient.Get(
-		context.Background(),
-		"refresh:"+request.RefreshToken,
-	).Uint64()
+// refreshToken creates a new access token using the refresh token stored in Redis
+func (s *authService) RefreshToken(request dto.RefreshTokenRequest) (*dto.AuthResponse, error) {
+	userID, err := s.redisClient.Get(context.Background(), "refresh:"+request.RefreshToken).Uint64()
 
 	if err != nil {
 		return nil, utils.ErrInvalidToken
@@ -194,16 +188,10 @@ func (s *authService) RefreshToken(
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, utils.ErrUserNotFound
 		}
-
 		return nil, err
 	}
 
-	token, err := utils.GenerateToken(
-		user.ID,
-		user.Username,
-		s.jwtSecret,
-		s.jwtExpiration,
-	)
+	token, err := utils.GenerateToken(user.ID, user.Username, s.jwtSecret, s.jwtExpiration)
 
 	if err != nil {
 		return nil, err
@@ -221,7 +209,7 @@ func (s *authService) RefreshToken(
 	}, nil
 }
 
-// * Generates a secure random refresh token.
+// generating a refresh token.
 func generateRefreshToken() (string, error) {
 	b := make([]byte, 32)
 

@@ -9,9 +9,10 @@ type UserResponse struct {
 }
 
 type AuthResponse struct {
-	User         UserResponse `json:"user"`
-	Token        string       `json:"token"`
-	RefreshToken string       `json:"refresh_token"`
+	User  UserResponse `json:"user"`
+	Token string       `json:"token"`
+	//adding refresh token
+	RefreshToken string `json:"refresh_token"`
 }
 
 type MessageResponse struct {

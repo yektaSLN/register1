@@ -7,7 +7,7 @@ import (
 	"login/database"
 	"login/handler"
 	"login/models"
-	"login/redis" // *
+	"login/redis"
 	"login/repository"
 	"login/routes"
 	"login/service"
@@ -19,7 +19,8 @@ func main() {
 		log.Fatal("failed to load config:", err)
 	}
 
-	redisClient := redis.NewClient(cfg.RedisAddr) // *
+	//adding redis
+	redisClient := redis.NewClient(cfg.RedisAddr)
 
 	loginDB, err := database.Connect(cfg, cfg.DBName)
 
@@ -41,7 +42,8 @@ func main() {
 		userRepository,
 		cfg.JWTSecret,
 		cfg.JWTExpiration,
-		redisClient, // *
+
+		redisClient, //*
 	)
 
 	authHandler := handler.NewAuthHandler(authService)

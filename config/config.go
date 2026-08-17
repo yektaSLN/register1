@@ -39,8 +39,10 @@ func Load() (*Config, error) {
 		ProductDBName: getEnv("PRODUCT_DB_NAME", "products"),
 		DBSSLMode:     getEnv("DB_SSLMODE", "disable"),
 
-		JWTSecret:     getEnv("JWT_SECRET", ""),
-		JWTExpiration: 10,
+		JWTSecret: getEnv("JWT_SECRET", ""),
+
+		//access token will expire after 10 minutes
+		JWTExpiration: 2,
 
 		//adding redis
 		RedisAddr: getEnv("REDIS_ADDR", ""),
