@@ -8,11 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(
-	cfg *config.Config,
-	authHandler *handler.AuthHandler,
-	productHandler *handler.ProductHandler,
-) *gin.Engine {
+func SetupRouter(cfg *config.Config, authHandler *handler.AuthHandler, productHandler *handler.ProductHandler, rateLimiter *middleware.RateLimiter) *gin.Engine {
 
 	gin.SetMode(gin.ReleaseMode)
 
@@ -25,13 +21,13 @@ func SetupRouter(
 
 	api := router.Group("/api")
 
-	auth := api.Group("/auth")
+	//auth := api.Group("/auth")
 	{
-		auth.POST("/register", authHandler.Register)
-		auth.POST("/login", authHandler.Login)
-		auth.POST("/refresh", authHandler.RefreshToken) // *
-		auth.POST("/forgot-password", authHandler.ForgotPassword)
-		auth.POST("/reset-password", authHandler.ResetPassword)
+		api.POST("/register", authHandler.Register)
+		api.POST("/login", rateLimiter.Middleware(), authHandler.Login)
+		api.POST("/refresh", authHandler.RefreshToken) //*
+		api.POST("/forgot-password", authHandler.ForgotPassword)
+		api.POST("/reset-password", authHandler.ResetPassword)
 	}
 
 	users := api.Group("/users")

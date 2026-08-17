@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 
+	"strconv"
+
 	"github.com/joho/godotenv"
 )
 
@@ -21,10 +23,23 @@ type Config struct {
 	JWTExpiration int
 	//adding redis
 	RedisAddr string
+
+	RateLimitRequests      int
+	RateLimitWindowSeconds int
 }
 
 func Load() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
+		return nil, err
+	}
+
+	rateLimitRequests, err := strconv.Atoi(getEnv("RATE_LIMIT_REQUESTS", "5"))
+	if err != nil {
+		return nil, err
+	}
+
+	rateLimitWindowSeconds, err := strconv.Atoi(getEnv("RATE_LIMIT_WINDOW_SECONDS", "60"))
+	if err != nil {
 		return nil, err
 	}
 
@@ -46,6 +61,9 @@ func Load() (*Config, error) {
 
 		//adding redis
 		RedisAddr: getEnv("REDIS_ADDR", ""),
+
+		RateLimitRequests:      rateLimitRequests,
+		RateLimitWindowSeconds: rateLimitWindowSeconds,
 	}, nil
 }
 

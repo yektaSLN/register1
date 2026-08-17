@@ -6,6 +6,7 @@ import (
 	"login/config"
 	"login/database"
 	"login/handler"
+	"login/middleware"
 	"login/models"
 	"login/redis"
 	"login/repository"
@@ -21,6 +22,8 @@ func main() {
 
 	//adding redis
 	redisClient := redis.NewClient(cfg.RedisAddr)
+
+	rateLimiter := middleware.NewRateLimiter(redisClient, cfg.RateLimitRequests, cfg.RateLimitWindowSeconds)
 
 	loginDB, err := database.Connect(cfg, cfg.DBName)
 
@@ -64,7 +67,7 @@ func main() {
 	productService := service.NewProductService(productRepository)
 	productHandler := handler.NewProductHandler(productService)
 
-	router := routes.SetupRouter(cfg, authHandler, productHandler)
+	router := routes.SetupRouter(cfg, authHandler, productHandler, rateLimiter)
 
 	log.Println("server is running on port", cfg.ServerPort)
 
