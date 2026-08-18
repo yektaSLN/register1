@@ -18,5 +18,6 @@ features included:
 - password hashing
 - input validation
 - error handling
-- product crud 
+- product crud
+- rate limit for requests
 
