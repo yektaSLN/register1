@@ -50,9 +50,11 @@ func SetupRouter(
 	{
 		products.POST("", productRateLimiter.Middleware(), productHandler.Create)
 		products.GET("", productHandler.GetAll)
+		products.GET("/export", productHandler.Export)
 		products.GET("/:id", productHandler.GetByID)
 		products.PUT("/:id", productHandler.Update)
 		products.DELETE("/:id", productHandler.Delete)
+
 	}
 
 	return router

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -11,6 +12,7 @@ import (
 	"login/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/xuri/excelize/v2"
 )
 
 type ProductHandler struct {
@@ -67,10 +69,99 @@ func (h *ProductHandler) GetAll(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"success":  true,
-		"products": products,
+		"success":        true,
+		"products":       products,
+		"excel_download": "/api/products/export",
 	})
 }
+
+func (h *ProductHandler) Export(c *gin.Context) {
+	userID, ok := getUserID(c)
+	if !ok {
+		h.handleError(c, utils.ErrInvalidToken)
+		return
+	}
+
+	products, err := h.productService.GetAll(userID)
+	if err != nil {
+		h.handleError(c, err)
+		return
+	}
+
+	file := excelize.NewFile()
+	defer file.Close()
+
+	sheetName := "Products"
+	file.SetSheetName("Sheet1", sheetName)
+
+	headers := []string{
+		"ID",
+		"Name",
+		"Price",
+		"Created At",
+		"Updated At",
+	}
+
+	for col, header := range headers {
+		cell, err := excelize.CoordinatesToCellName(col+1, 1)
+		if err != nil {
+			h.handleError(c, err)
+			return
+		}
+
+		if err := file.SetCellValue(sheetName, cell, header); err != nil {
+			h.handleError(c, err)
+			return
+		}
+	}
+
+	for row, product := range products {
+		values := []interface{}{
+			row + 1,
+			product.Name,
+			product.Price,
+			product.CreatedAt.Format("2006-01-02 15:04:05"),
+			product.UpdatedAt.Format("2006-01-02 15:04:05"),
+		}
+
+		for col, value := range values {
+			cell, err := excelize.CoordinatesToCellName(col+1, row+2)
+			if err != nil {
+				h.handleError(c, err)
+				return
+			}
+
+			if err := file.SetCellValue(sheetName, cell, value); err != nil {
+				h.handleError(c, err)
+				return
+			}
+		}
+	}
+
+	file.SetColWidth(sheetName, "A", "A", 10)
+	file.SetColWidth(sheetName, "B", "B", 30)
+	file.SetColWidth(sheetName, "C", "C", 20)
+	file.SetColWidth(sheetName, "D", "E", 25)
+
+	filename := fmt.Sprintf("products_user_%d.xlsx", userID)
+
+	c.Header(
+		"Content-Type",
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	)
+
+	c.Header(
+		"Content-Disposition",
+		fmt.Sprintf(`attachment; filename="%s"`, filename),
+	)
+
+	c.Header("Content-Transfer-Encoding", "binary")
+
+	if err := file.Write(c.Writer); err != nil {
+		return
+	}
+}
+
 func (h *ProductHandler) GetByID(c *gin.Context) {
 	userID, ok := getUserID(c)
 	if !ok {

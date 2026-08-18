@@ -57,7 +57,7 @@ func Load() (*Config, error) {
 		JWTSecret: getEnv("JWT_SECRET", ""),
 
 		//access token will expire after 10 minutes
-		JWTExpiration: 2,
+		JWTExpiration: 10,
 
 		//adding redis
 		RedisAddr: getEnv("REDIS_ADDR", ""),
