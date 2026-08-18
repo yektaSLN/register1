@@ -23,7 +23,16 @@ func main() {
 	//adding redis
 	redisClient := redis.NewClient(cfg.RedisAddr)
 
-	rateLimiter := middleware.NewRateLimiter(redisClient, cfg.RateLimitRequests, cfg.RateLimitWindowSeconds)
+	loginRateLimiter := middleware.NewRateLimiter(redisClient, "login", 5, 60)
+
+	registerRateLimiter := middleware.NewRateLimiter(redisClient, "register", 5, 60)
+
+	refreshRateLimiter := middleware.NewRateLimiter(redisClient, "refresh", 10, 60)
+
+	forgotPasswordRateLimiter := middleware.NewRateLimiter(redisClient, "forgot-password", 3, 60)
+
+	resetPasswordRateLimiter := middleware.NewRateLimiter(redisClient, "reset-password", 5, 60)
+	productRateLimiter := middleware.NewRateLimiter(redisClient, "product", 5, 60)
 
 	loginDB, err := database.Connect(cfg, cfg.DBName)
 
@@ -67,7 +76,7 @@ func main() {
 	productService := service.NewProductService(productRepository)
 	productHandler := handler.NewProductHandler(productService)
 
-	router := routes.SetupRouter(cfg, authHandler, productHandler, rateLimiter)
+	router := routes.SetupRouter(cfg, authHandler, productHandler, loginRateLimiter, registerRateLimiter, refreshRateLimiter, forgotPasswordRateLimiter, resetPasswordRateLimiter, productRateLimiter)
 
 	log.Println("server is running on port", cfg.ServerPort)
 

@@ -8,7 +8,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(cfg *config.Config, authHandler *handler.AuthHandler, productHandler *handler.ProductHandler, rateLimiter *middleware.RateLimiter) *gin.Engine {
+func SetupRouter(
+	cfg *config.Config,
+	authHandler *handler.AuthHandler,
+	productHandler *handler.ProductHandler,
+	loginRateLimiter *middleware.RateLimiter,
+	registerRatelimiter *middleware.RateLimiter,
+	refreshRateLimiter *middleware.RateLimiter,
+	forgotPasswordRateLimiter *middleware.RateLimiter,
+	resetPasswordRateLimiter *middleware.RateLimiter,
+	productRateLimiter *middleware.RateLimiter) *gin.Engine {
 
 	gin.SetMode(gin.ReleaseMode)
 
@@ -23,11 +32,11 @@ func SetupRouter(cfg *config.Config, authHandler *handler.AuthHandler, productHa
 
 	//auth := api.Group("/auth")
 	{
-		api.POST("/register", authHandler.Register)
-		api.POST("/login", rateLimiter.Middleware(), authHandler.Login)
-		api.POST("/refresh", authHandler.RefreshToken) //*
-		api.POST("/forgot-password", authHandler.ForgotPassword)
-		api.POST("/reset-password", authHandler.ResetPassword)
+		api.POST("/register", registerRatelimiter.Middleware(), authHandler.Register)
+		api.POST("/login", loginRateLimiter.Middleware(), authHandler.Login)
+		api.POST("/refresh", refreshRateLimiter.Middleware(), authHandler.RefreshToken) //*
+		api.POST("/forgot-password", forgotPasswordRateLimiter.Middleware(), authHandler.ForgotPassword)
+		api.POST("/reset-password", resetPasswordRateLimiter.Middleware(), authHandler.ResetPassword)
 	}
 
 	users := api.Group("/users")
@@ -39,7 +48,7 @@ func SetupRouter(cfg *config.Config, authHandler *handler.AuthHandler, productHa
 	products := api.Group("/products")
 	products.Use(middleware.AuthMiddleware(cfg.JWTSecret))
 	{
-		products.POST("", productHandler.Create)
+		products.POST("", productRateLimiter.Middleware(), productHandler.Create)
 		products.GET("", productHandler.GetAll)
 		products.GET("/:id", productHandler.GetByID)
 		products.PUT("/:id", productHandler.Update)

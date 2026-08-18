@@ -15,11 +15,13 @@ type RateLimiter struct {
 	Redis         *redis.Client
 	Limit         int
 	WindowSeconds int
+	Name          string
 }
 
-func NewRateLimiter(redisClient *redis.Client, limit int, windowSeconds int) *RateLimiter {
+func NewRateLimiter(redisClient *redis.Client, name string, limit int, windowSeconds int) *RateLimiter {
 	return &RateLimiter{
 		Redis:         redisClient,
+		Name:          name,
 		Limit:         limit,
 		WindowSeconds: windowSeconds,
 	}
@@ -27,7 +29,7 @@ func NewRateLimiter(redisClient *redis.Client, limit int, windowSeconds int) *Ra
 
 func (rl *RateLimiter) Allow(ip string) (bool, error) {
 	ctx := context.Background()
-	key := fmt.Sprintf("rate_limit:%s", ip)
+	key := fmt.Sprintf("rate_limit:%s:%s", rl.Name, ip)
 	count, err := rl.Redis.Incr(ctx, key).Result()
 	if err != nil {
 		return false, err
