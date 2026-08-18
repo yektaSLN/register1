@@ -4,17 +4,19 @@ used in this project:
 - gin
 - gorm
 - postgreSQL
-- JWT
+- JWT 
 - bcrypt
+- redis
 
 features included:
 - user registration
 - user login
-- JWT
+- JWT (access token and refresh token)
 - get current user(profile panel)
 - forgot password
 - reset password
 - password hashing
 - input validation
--error handling
+- error handling
+- product crud 
 
