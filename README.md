@@ -20,4 +20,5 @@ features included:
 - error handling
 - product crud
 - rate limit for requests
+- excel export for each user's products
 
