@@ -5,9 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"log"
 	"time"
 
 	"login/dto"
+	"login/kafka"
 	"login/models"
 	"login/repository"
 	"login/utils"
@@ -21,7 +23,7 @@ import (
 type AuthService interface {
 	Register(request dto.RegisterRequest) (*dto.UserResponse, error)
 	Login(request dto.LoginRequest) (*dto.AuthResponse, error)
-	RefreshToken(request dto.RefreshTokenRequest) (*dto.AuthResponse, error) // *
+	RefreshToken(request dto.RefreshTokenRequest) (*dto.AuthResponse, error)
 	ForgotPassword(request dto.ForgotPasswordRequest) (string, error)
 	ResetPassword(request dto.ResetPasswordRequest) error
 	GetUserByID(id uint) (*dto.UserResponse, error)
@@ -32,43 +34,44 @@ type authService struct {
 	jwtSecret      string
 	jwtExpiration  int
 	validator      *validator.Validator
-	redisClient    *redis.Client //*
+	redisClient    *redis.Client
+	kafkaProducer  *kafka.Producer
 }
 
-// constructor
 func NewAuthService(
 	userRepository repository.UserRepository,
 	jwtSecret string,
 	jwtExpiration int,
-	redisClient *redis.Client, //*
+	redisClient *redis.Client,
+	kafkaProducer *kafka.Producer,
 ) AuthService {
 	return &authService{
 		userRepository: userRepository,
 		jwtSecret:      jwtSecret,
 		jwtExpiration:  jwtExpiration,
 		validator:      validator.New(),
-		redisClient:    redisClient, //*
+		redisClient:    redisClient,
+		kafkaProducer:  kafkaProducer,
 	}
 }
 
-func (s *authService) Register(request dto.RegisterRequest) (*dto.UserResponse, error) {
+func (s *authService) Register(
+	request dto.RegisterRequest,
+) (*dto.UserResponse, error) {
 
 	request.Username = validator.NormalizeUsername(request.Username)
 	request.Email = validator.NormalizeEmail(request.Email)
 	request.Phone = validator.NormalizePhone(request.Phone)
 
-	//using the new valitaion form
 	if err := s.validator.Validate(request); err != nil {
 		return nil, err
 	}
 
-	// checking if the username exists in database
 	_, err := s.userRepository.FindByUsername(request.Username)
 	if err == nil {
 		return nil, utils.ErrUsernameExists
 	}
 
-	// the username doesn't exist so it's ok
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -96,7 +99,6 @@ func (s *authService) Register(request dto.RegisterRequest) (*dto.UserResponse, 
 		return nil, err
 	}
 
-	// saving data in database
 	user := &models.User{
 		Username: request.Username,
 		Email:    request.Email,
@@ -109,6 +111,22 @@ func (s *authService) Register(request dto.RegisterRequest) (*dto.UserResponse, 
 		return nil, err
 	}
 
+	eventPayload := map[string]any{
+		"id":       user.ID,
+		"username": user.Username,
+		"email":    user.Email,
+		"age":      user.Age,
+		"phone":    user.Phone,
+	}
+
+	if err := s.kafkaProducer.Publish(
+		context.Background(),
+		kafka.EventUserRegistered,
+		eventPayload,
+	); err != nil {
+		log.Printf("Kafka publish failed for user.registered: %v", err)
+	}
+
 	return &dto.UserResponse{
 		ID:       user.ID,
 		Username: user.Username,
@@ -118,7 +136,9 @@ func (s *authService) Register(request dto.RegisterRequest) (*dto.UserResponse, 
 	}, nil
 }
 
-func (s *authService) Login(request dto.LoginRequest) (*dto.AuthResponse, error) {
+func (s *authService) Login(
+	request dto.LoginRequest,
+) (*dto.AuthResponse, error) {
 
 	request.Username = validator.NormalizeUsername(request.Username)
 
@@ -146,7 +166,20 @@ func (s *authService) Login(request dto.LoginRequest) (*dto.AuthResponse, error)
 		return nil, err
 	}
 
-	refreshToken, err := generateRefreshToken() // *
+	eventPayload := map[string]any{
+		"user_id":  user.ID,
+		"username": user.Username,
+	}
+
+	if err := s.kafkaProducer.Publish(
+		context.Background(),
+		kafka.EventUserLoggedIn,
+		eventPayload,
+	); err != nil {
+		log.Printf("Kafka publish failed for user.logged_in: %v", err)
+	}
+
+	refreshToken, err := generateRefreshToken()
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +189,7 @@ func (s *authService) Login(request dto.LoginRequest) (*dto.AuthResponse, error)
 		"refresh:"+refreshToken,
 		user.ID,
 		7*24*time.Hour,
-	).Err() // *
+	).Err()
 
 	if err != nil {
 		return nil, err
@@ -171,13 +204,18 @@ func (s *authService) Login(request dto.LoginRequest) (*dto.AuthResponse, error)
 			Phone:    user.Phone,
 		},
 		Token:        token,
-		RefreshToken: refreshToken, // *
+		RefreshToken: refreshToken,
 	}, nil
 }
 
-// refreshToken creates a new access token using the refresh token stored in Redis
-func (s *authService) RefreshToken(request dto.RefreshTokenRequest) (*dto.AuthResponse, error) {
-	userID, err := s.redisClient.Get(context.Background(), "refresh:"+request.RefreshToken).Uint64()
+func (s *authService) RefreshToken(
+	request dto.RefreshTokenRequest,
+) (*dto.AuthResponse, error) {
+
+	userID, err := s.redisClient.Get(
+		context.Background(),
+		"refresh:"+request.RefreshToken,
+	).Uint64()
 
 	if err != nil {
 		return nil, utils.ErrInvalidToken
@@ -188,10 +226,16 @@ func (s *authService) RefreshToken(request dto.RefreshTokenRequest) (*dto.AuthRe
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, utils.ErrUserNotFound
 		}
+
 		return nil, err
 	}
 
-	token, err := utils.GenerateToken(user.ID, user.Username, s.jwtSecret, s.jwtExpiration)
+	token, err := utils.GenerateToken(
+		user.ID,
+		user.Username,
+		s.jwtSecret,
+		s.jwtExpiration,
+	)
 
 	if err != nil {
 		return nil, err
@@ -209,7 +253,6 @@ func (s *authService) RefreshToken(request dto.RefreshTokenRequest) (*dto.AuthRe
 	}, nil
 }
 
-// generating a refresh token.
 func generateRefreshToken() (string, error) {
 	b := make([]byte, 32)
 
@@ -220,7 +263,9 @@ func generateRefreshToken() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func (s *authService) ForgotPassword(request dto.ForgotPasswordRequest) (string, error) {
+func (s *authService) ForgotPassword(
+	request dto.ForgotPasswordRequest,
+) (string, error) {
 
 	request.Email = validator.NormalizeEmail(request.Email)
 
@@ -239,6 +284,7 @@ func (s *authService) ForgotPassword(request dto.ForgotPasswordRequest) (string,
 		s.jwtSecret,
 		1,
 	)
+
 	if err != nil {
 		return "", err
 	}
@@ -246,14 +292,18 @@ func (s *authService) ForgotPassword(request dto.ForgotPasswordRequest) (string,
 	return token, nil
 }
 
-func (s *authService) ResetPassword(request dto.ResetPasswordRequest) error {
+func (s *authService) ResetPassword(
+	request dto.ResetPasswordRequest,
+) error {
 
 	if err := s.validator.Validate(request); err != nil {
 		return err
 	}
 
-	// validating token
-	token, err := utils.ValidateToken(request.Token, s.jwtSecret)
+	token, err := utils.ValidateToken(
+		request.Token,
+		s.jwtSecret,
+	)
 
 	if err != nil || !token.Valid {
 		return utils.ErrInvalidToken
@@ -290,10 +340,30 @@ func (s *authService) ResetPassword(request dto.ResetPasswordRequest) error {
 
 	user.Password = hashedPassword
 
-	return s.userRepository.Update(user)
+	if err := s.userRepository.Update(user); err != nil {
+		return err
+	}
+
+	eventPayload := map[string]any{
+		"user_id":  user.ID,
+		"username": user.Username,
+	}
+
+	if err := s.kafkaProducer.Publish(
+		context.Background(),
+		kafka.EventPasswordReset,
+		eventPayload,
+	); err != nil {
+		log.Printf("Kafka publish failed for user.password_reset: %v", err)
+	}
+
+	return nil
+
 }
 
-func (s *authService) GetUserByID(id uint) (*dto.UserResponse, error) {
+func (s *authService) GetUserByID(
+	id uint,
+) (*dto.UserResponse, error) {
 
 	user, err := s.userRepository.FindByID(id)
 	if err != nil {

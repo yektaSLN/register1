@@ -6,6 +6,7 @@ import (
 	"login/config"
 	"login/database"
 	"login/handler"
+	"login/kafka"
 	"login/middleware"
 	"login/models"
 	"login/redis"
@@ -20,63 +21,114 @@ func main() {
 		log.Fatal("failed to load config:", err)
 	}
 
-	//adding redis
+	//redis
 	redisClient := redis.NewClient(cfg.RedisAddr)
 
-	loginRateLimiter := middleware.NewRateLimiter(redisClient, "login", 5, 60)
+	//kafka
+	kafkaProducer := kafka.NewProducer(
+		cfg.KafkaBrokers,
+		cfg.KafkaTopic,
+	)
+	defer func() {
+		if err := kafkaProducer.Close(); err != nil {
+			log.Println("failed to close kafka producer:", err)
+		}
+	}()
 
-	registerRateLimiter := middleware.NewRateLimiter(redisClient, "register", 5, 60)
+	//rate limiters
+	loginRateLimiter := middleware.NewRateLimiter(
+		redisClient,
+		"login",
+		5,
+		60,
+	)
 
-	refreshRateLimiter := middleware.NewRateLimiter(redisClient, "refresh", 10, 60)
+	registerRateLimiter := middleware.NewRateLimiter(
+		redisClient,
+		"register",
+		5,
+		60,
+	)
 
-	forgotPasswordRateLimiter := middleware.NewRateLimiter(redisClient, "forgot-password", 3, 60)
+	refreshRateLimiter := middleware.NewRateLimiter(
+		redisClient,
+		"refresh",
+		10,
+		60,
+	)
 
-	resetPasswordRateLimiter := middleware.NewRateLimiter(redisClient, "reset-password", 5, 60)
-	productRateLimiter := middleware.NewRateLimiter(redisClient, "product", 5, 60)
+	forgotPasswordRateLimiter := middleware.NewRateLimiter(
+		redisClient,
+		"forgot-password",
+		3,
+		60,
+	)
 
+	resetPasswordRateLimiter := middleware.NewRateLimiter(
+		redisClient,
+		"reset-password",
+		5,
+		60,
+	)
+
+	productRateLimiter := middleware.NewRateLimiter(
+		redisClient,
+		"product",
+		5,
+		60,
+	)
+
+	//login database
 	loginDB, err := database.Connect(cfg, cfg.DBName)
-
 	if err != nil {
 		log.Fatal("failed to connect to login database:", err)
 	}
 
-	err = loginDB.AutoMigrate(&models.User{})
-
-	if err != nil {
+	if err := loginDB.AutoMigrate(&models.User{}); err != nil {
 		log.Fatal("failed to migrate login database:", err)
 	}
 
-	userRepository := repository.NewUserRepository(
-		loginDB,
-	)
+	userRepository := repository.NewUserRepository(loginDB)
 
 	authService := service.NewAuthService(
 		userRepository,
 		cfg.JWTSecret,
 		cfg.JWTExpiration,
-
-		redisClient, //*
+		redisClient,
+		kafkaProducer,
 	)
 
 	authHandler := handler.NewAuthHandler(authService)
 
 	productDB, err := database.Connect(cfg, cfg.ProductDBName)
-
 	if err != nil {
 		log.Fatal("failed to connect to products database:", err)
 	}
 
-	err = productDB.AutoMigrate(&models.Product{})
-
-	if err != nil {
+	if err := productDB.AutoMigrate(&models.Product{}); err != nil {
 		log.Fatal("failed to migrate products database:", err)
 	}
 
 	productRepository := repository.NewProductRepository(productDB)
-	productService := service.NewProductService(productRepository)
+
+	productService := service.NewProductService(
+		productRepository,
+		kafkaProducer,
+	)
+
 	productHandler := handler.NewProductHandler(productService)
 
-	router := routes.SetupRouter(cfg, authHandler, productHandler, loginRateLimiter, registerRateLimiter, refreshRateLimiter, forgotPasswordRateLimiter, resetPasswordRateLimiter, productRateLimiter)
+	router := routes.SetupRouter(
+		cfg,
+		authHandler,
+		productHandler,
+		loginRateLimiter,
+		registerRateLimiter,
+		refreshRateLimiter,
+		forgotPasswordRateLimiter,
+		resetPasswordRateLimiter,
+		productRateLimiter,
+	)
 
 	log.Println("server is running on port", cfg.ServerPort)
 

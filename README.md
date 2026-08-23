@@ -1,23 +1,51 @@
 A simple authentication REST API built with Go.
-used in this project:
-- go
-- gin
-- gorm
-- postgreSQL
-- JWT 
+
+Used in this project:
+
+- Go
+- Gin
+- GORM
+- PostgreSQL
+- JWT
 - bcrypt
-- redis
+- Redis
+- Apache Kafka
+- ELK Stack (Elasticsearch, Logstash, Kibana)
 
-features included:
-- user registration
-- user login
-- JWT (access token and refresh token)
-- get current user(profile panel)
-- forgot password
-- reset password
-- password hashing
-- input validation
-- error handling
-- product crud
-- rate limit for requests
+Features included:
 
+- User registration
+- User login
+- JWT authentication (access token & refresh token)
+- Get current user (profile)
+- Forgot password
+- Reset password
+- Password hashing
+- Input validation
+- Error handling
+- Product CRUD
+- Rate limiting
+- Event streaming with Kafka
+- Centralized logging with ELK Stack
+- Log collection, processing, storage, and visualization
+- Real-time monitoring and log analysis
+
+Architecture:
+
+Client
+  │
+  ▼
+Go REST API (Gin)
+  │
+  ├── PostgreSQL
+  ├── Redis
+  └── Kafka
+        │
+        ▼
+      Logstash
+        │
+        ▼
+   Elasticsearch
+        │
+        ▼
+      Kibana

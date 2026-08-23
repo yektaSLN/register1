@@ -3,6 +3,8 @@ package service
 import (
 	"errors"
 
+	"context"
+	"login/kafka"
 	"login/models"
 	"login/repository"
 	"login/utils"
@@ -20,11 +22,13 @@ type ProductService interface {
 
 type productService struct {
 	productRepository repository.ProductRepository
+	kafkaProducer     *kafka.Producer
 }
 
-func NewProductService(productRepository repository.ProductRepository) ProductService {
+func NewProductService(productRepository repository.ProductRepository, kafkaProducer *kafka.Producer) ProductService {
 	return &productService{
 		productRepository: productRepository,
+		kafkaProducer:     kafkaProducer,
 	}
 }
 
@@ -35,7 +39,26 @@ func (s *productService) Create(userID uint, product *models.Product) error {
 
 	product.UserID = userID
 
-	return s.productRepository.Create(product)
+	if err := s.productRepository.Create(product); err != nil {
+		return err
+	}
+
+	eventPayload := map[string]any{
+		"id":      product.ID,
+		"user_id": product.UserID,
+		"name":    product.Name,
+		"price":   product.Price,
+	}
+
+	if err := s.kafkaProducer.Publish(
+		context.Background(),
+		kafka.EventProductCreated,
+		eventPayload,
+	); err != nil {
+		// Kafka failure should not fail product creation.
+	}
+
+	return nil
 }
 
 func (s *productService) GetByID(userID uint, productID uint) (*models.Product, error) {
@@ -74,7 +97,27 @@ func (s *productService) Update(userID uint, productID uint, product *models.Pro
 	}
 	existingProduct.Name = product.Name
 	existingProduct.Price = product.Price
-	return s.productRepository.Update(existingProduct)
+
+	if err := s.productRepository.Update(existingProduct); err != nil {
+		return err
+	}
+	eventPayload := map[string]any{
+		"id":      existingProduct.ID,
+		"user_id": existingProduct.UserID,
+		"name":    existingProduct.Name,
+		"price":   existingProduct.Price,
+	}
+
+	if err := s.kafkaProducer.Publish(
+		context.Background(),
+		kafka.EventProductUpdated,
+		eventPayload,
+	); err != nil {
+		// Kafka failure should not fail product update.
+	}
+
+	return nil
+
 }
 
 func (s *productService) Delete(userID uint, productID uint) error {
@@ -86,8 +129,27 @@ func (s *productService) Delete(userID uint, productID uint) error {
 		}
 		return err
 	}
-	return s.productRepository.Delete(
+
+	if err := s.productRepository.Delete(
 		productID,
 		userID,
-	)
+	); err != nil {
+		return err
+	}
+
+	eventPayload := map[string]any{
+		"id":      productID,
+		"user_id": userID,
+	}
+
+	if err := s.kafkaProducer.Publish(
+		context.Background(),
+		kafka.EventProductDeleted,
+		eventPayload,
+	); err != nil {
+		// Kafka failure should not fail product deletion.
+	}
+
+	return nil
+
 }

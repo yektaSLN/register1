@@ -2,8 +2,8 @@ package config
 
 import (
 	"os"
-
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -21,8 +21,11 @@ type Config struct {
 
 	JWTSecret     string
 	JWTExpiration int
-	//adding redis
+
 	RedisAddr string
+
+	KafkaBrokers []string
+	KafkaTopic   string
 
 	RateLimitRequests      int
 	RateLimitWindowSeconds int
@@ -33,15 +36,24 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	rateLimitRequests, err := strconv.Atoi(getEnv("RATE_LIMIT_REQUESTS", "5"))
+	rateLimitRequests, err := strconv.Atoi(
+		getEnv("RATE_LIMIT_REQUESTS", "5"),
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	rateLimitWindowSeconds, err := strconv.Atoi(getEnv("RATE_LIMIT_WINDOW_SECONDS", "60"))
+	rateLimitWindowSeconds, err := strconv.Atoi(
+		getEnv("RATE_LIMIT_WINDOW_SECONDS", "60"),
+	)
 	if err != nil {
 		return nil, err
 	}
+
+	kafkaBrokers := strings.Split(
+		getEnv("KAFKA_BROKERS", "localhost:9092"),
+		",",
+	)
 
 	return &Config{
 		ServerPort: getEnv("SERVER_PORT", "8080"),
@@ -56,11 +68,12 @@ func Load() (*Config, error) {
 
 		JWTSecret: getEnv("JWT_SECRET", ""),
 
-		//access token will expire after 10 minutes
 		JWTExpiration: 10,
 
-		//adding redis
 		RedisAddr: getEnv("REDIS_ADDR", ""),
+
+		KafkaBrokers: kafkaBrokers,
+		KafkaTopic:   getEnv("KAFKA_TOPIC", "application-events"),
 
 		RateLimitRequests:      rateLimitRequests,
 		RateLimitWindowSeconds: rateLimitWindowSeconds,
