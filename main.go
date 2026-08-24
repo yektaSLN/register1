@@ -1,41 +1,53 @@
 package main
 
 import (
-	"log"
+	"os"
 
 	"login/config"
 	"login/database"
 	"login/handler"
 	"login/kafka"
+	"login/logger"
 	"login/middleware"
 	"login/models"
 	"login/redis"
 	"login/repository"
 	"login/routes"
 	"login/service"
+
+	"github.com/rs/zerolog"
 )
 
 func main() {
+
+	logger.Configure()
+
+	log := logger.New(os.Stdout)
+
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal("failed to load config:", err)
+		log.Fatal().
+			Err(err).
+			Msg("failed to load config")
 	}
 
-	//redis
-	redisClient := redis.NewClient(cfg.RedisAddr)
+	redisClient := redis.NewClient(
+		cfg.RedisAddr,
+	)
 
-	//kafka
 	kafkaProducer := kafka.NewProducer(
 		cfg.KafkaBrokers,
 		cfg.KafkaTopic,
 	)
+
 	defer func() {
 		if err := kafkaProducer.Close(); err != nil {
-			log.Println("failed to close kafka producer:", err)
+			log.Error().
+				Err(err).
+				Msg("failed to close kafka producer")
 		}
 	}()
 
-	//rate limiters
 	loginRateLimiter := middleware.NewRateLimiter(
 		redisClient,
 		"login",
@@ -78,17 +90,28 @@ func main() {
 		60,
 	)
 
-	//login database
-	loginDB, err := database.Connect(cfg, cfg.DBName)
+	loginDB, err := database.Connect(
+		cfg,
+		cfg.DBName,
+	)
+
 	if err != nil {
-		log.Fatal("failed to connect to login database:", err)
+		log.Fatal().
+			Err(err).
+			Msg("failed to connect to login database")
 	}
 
-	if err := loginDB.AutoMigrate(&models.User{}); err != nil {
-		log.Fatal("failed to migrate login database:", err)
+	if err := loginDB.AutoMigrate(
+		&models.User{},
+	); err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("failed to migrate login database")
 	}
 
-	userRepository := repository.NewUserRepository(loginDB)
+	userRepository := repository.NewUserRepository(
+		loginDB,
+	)
 
 	authService := service.NewAuthService(
 		userRepository,
@@ -98,30 +121,47 @@ func main() {
 		kafkaProducer,
 	)
 
-	authHandler := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(
+		authService,
+	)
 
-	productDB, err := database.Connect(cfg, cfg.ProductDBName)
+	productDB, err := database.Connect(
+		cfg,
+		cfg.ProductDBName,
+	)
+
 	if err != nil {
-		log.Fatal("failed to connect to products database:", err)
+		log.Fatal().
+			Err(err).
+			Msg("failed to connect to products database")
 	}
 
-	if err := productDB.AutoMigrate(&models.Product{}); err != nil {
-		log.Fatal("failed to migrate products database:", err)
+	if err := productDB.AutoMigrate(
+		&models.Product{},
+	); err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("failed to migrate products database")
 	}
 
-	productRepository := repository.NewProductRepository(productDB)
+	productRepository := repository.NewProductRepository(
+		productDB,
+	)
 
 	productService := service.NewProductService(
 		productRepository,
 		kafkaProducer,
 	)
 
-	productHandler := handler.NewProductHandler(productService)
+	productHandler := handler.NewProductHandler(
+		productService,
+	)
 
 	router := routes.SetupRouter(
 		cfg,
 		authHandler,
 		productHandler,
+		kafkaProducer,
 		loginRateLimiter,
 		registerRateLimiter,
 		refreshRateLimiter,
@@ -130,9 +170,18 @@ func main() {
 		productRateLimiter,
 	)
 
-	log.Println("server is running on port", cfg.ServerPort)
+	log.Info().
+		Str("port", cfg.ServerPort).
+		Msg("server is running")
 
-	if err := router.Run(":" + cfg.ServerPort); err != nil {
-		log.Fatal("failed to start server:", err)
+	zerolog.DefaultContextLogger = &log
+
+	if err := router.Run(
+		":" + cfg.ServerPort,
+	); err != nil {
+
+		log.Fatal().
+			Err(err).
+			Msg("failed to start server")
 	}
 }

@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"log"
 	"time"
 
 	"login/dto"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -124,7 +124,12 @@ func (s *authService) Register(
 		kafka.EventUserRegistered,
 		eventPayload,
 	); err != nil {
-		log.Printf("Kafka publish failed for user.registered: %v", err)
+		log.Error().
+			Err(err).
+			Uint("user_id", user.ID).
+			Str("username", user.Username).
+			Str("event", kafka.EventUserRegistered).
+			Msg("failed to publish kafka event")
 	}
 
 	return &dto.UserResponse{
@@ -176,7 +181,12 @@ func (s *authService) Login(
 		kafka.EventUserLoggedIn,
 		eventPayload,
 	); err != nil {
-		log.Printf("Kafka publish failed for user.logged_in: %v", err)
+		log.Error().
+			Err(err).
+			Uint("user_id", user.ID).
+			Str("username", user.Username).
+			Str("event", kafka.EventUserLoggedIn).
+			Msg("failed to publish kafka event")
 	}
 
 	refreshToken, err := generateRefreshToken()
@@ -354,11 +364,15 @@ func (s *authService) ResetPassword(
 		kafka.EventPasswordReset,
 		eventPayload,
 	); err != nil {
-		log.Printf("Kafka publish failed for user.password_reset: %v", err)
+		log.Error().
+			Err(err).
+			Uint("user_id", user.ID).
+			Str("username", user.Username).
+			Str("event", kafka.EventPasswordReset).
+			Msg("failed to publish kafka event")
 	}
 
 	return nil
-
 }
 
 func (s *authService) GetUserByID(

@@ -32,20 +32,16 @@ func (p *Producer) Publish(
 	eventType string,
 	payload any,
 ) error {
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("failed to marshal kafka event: %w", err)
-	}
 
 	event := Event{
 		Type:      eventType,
 		Timestamp: time.Now().UTC(),
-		Payload:   data,
+		Payload:   payload,
 	}
 
 	message, err := json.Marshal(event)
 	if err != nil {
-		return fmt.Errorf("failed to marshal kafka message: %w", err)
+		return fmt.Errorf("failed to marshal kafka event: %w", err)
 	}
 
 	err = p.writer.WriteMessages(
@@ -57,7 +53,36 @@ func (p *Producer) Publish(
 	)
 
 	if err != nil {
-		return fmt.Errorf("failed to publish kafka event %q: %w", eventType, err)
+		return fmt.Errorf(
+			"failed to publish kafka event %q: %w",
+			eventType,
+			err,
+		)
+	}
+
+	return nil
+}
+
+func (p *Producer) PublishRaw(
+	ctx context.Context,
+	eventType string,
+	message []byte,
+) error {
+
+	err := p.writer.WriteMessages(
+		ctx,
+		kafkago.Message{
+			Key:   []byte(eventType),
+			Value: message,
+		},
+	)
+
+	if err != nil {
+		return fmt.Errorf(
+			"failed to publish raw kafka event %q: %w",
+			eventType,
+			err,
+		)
 	}
 
 	return nil

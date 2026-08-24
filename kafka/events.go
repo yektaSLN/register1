@@ -5,7 +5,7 @@ import "time"
 type Event struct {
 	Type      string    `json:"type"`
 	Timestamp time.Time `json:"timestamp"`
-	Payload   []byte    `json:"payload"`
+	Payload   any       `json:"payload"`
 }
 
 const (
@@ -15,4 +15,5 @@ const (
 	EventProductCreated = "product.created"
 	EventProductUpdated = "product.updated"
 	EventProductDeleted = "product.deleted"
+	EventHTTPRequest    = "http.request"
 )
