@@ -22,14 +22,44 @@ func main() {
 
 	logger.Configure()
 
-	log := logger.New(os.Stdout)
-
 	cfg, err := config.Load()
 	if err != nil {
+		log := logger.New(os.Stderr)
+
 		log.Fatal().
 			Err(err).
 			Msg("failed to load config")
 	}
+
+	// Initialize application log file.
+	if err := logger.InitFile(cfg.LogFile); err != nil {
+		log := logger.New(os.Stderr)
+
+		log.Fatal().
+			Err(err).
+			Str("path", cfg.LogFile).
+			Msg("failed to initialize log file")
+	}
+
+	defer func() {
+		if err := logger.CloseFile(); err != nil {
+			log := logger.New(os.Stderr)
+
+			log.Error().
+				Err(err).
+				Msg("failed to close log file")
+		}
+	}()
+
+	// Application logger writes to both stdout and the log file.
+	logFile := os.Stdout
+
+	log := logger.New(
+		zerolog.MultiLevelWriter(
+			logFile,
+			&fileWriter{},
+		),
+	)
 
 	redisClient := redis.NewClient(
 		cfg.RedisAddr,
@@ -172,6 +202,7 @@ func main() {
 
 	log.Info().
 		Str("port", cfg.ServerPort).
+		Str("log_file", cfg.LogFile).
 		Msg("server is running")
 
 	zerolog.DefaultContextLogger = &log
@@ -184,4 +215,10 @@ func main() {
 			Err(err).
 			Msg("failed to start server")
 	}
+}
+
+type fileWriter struct{}
+
+func (w *fileWriter) Write(p []byte) (int, error) {
+	return len(p), logger.WriteToFile(p)
 }

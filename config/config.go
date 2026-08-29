@@ -27,6 +27,8 @@ type Config struct {
 	KafkaBrokers []string
 	KafkaTopic   string
 
+	LogFile string
+
 	RateLimitRequests      int
 	RateLimitWindowSeconds int
 }
@@ -74,6 +76,11 @@ func Load() (*Config, error) {
 
 		KafkaBrokers: kafkaBrokers,
 		KafkaTopic:   getEnv("KAFKA_TOPIC", "application-events"),
+
+		LogFile: getEnv(
+			"LOG_FILE",
+			"/tmp/register1-logs/application-events.log",
+		),
 
 		RateLimitRequests:      rateLimitRequests,
 		RateLimitWindowSeconds: rateLimitWindowSeconds,

@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"context"
+	"os"
 	"time"
 
 	"login/kafka"
@@ -64,7 +65,12 @@ func LoggingMiddleware(
 			kafka.EventHTTPRequest,
 			buffer.Bytes(),
 		); err != nil {
-			println("FAILED TO PUBLISH HTTP LOG:", err.Error())
+
+			fileLogger := logger.New(os.Stderr)
+
+			fileLogger.Error().
+				Err(err).
+				Msg("failed to queue http log")
 		}
 	}
 }

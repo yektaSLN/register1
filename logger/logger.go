@@ -2,9 +2,17 @@ package logger
 
 import (
 	"io"
-	"time"
+	"os"
+	"path/filepath"
+	"sync"
 
 	"github.com/rs/zerolog"
+)
+
+var (
+	file     *os.File
+	fileMu   sync.Mutex
+	filePath string
 )
 
 func New(writer io.Writer) zerolog.Logger {
@@ -15,5 +23,69 @@ func New(writer io.Writer) zerolog.Logger {
 }
 
 func Configure() {
-	zerolog.TimeFieldFormat = time.RFC3339Nano
+	zerolog.TimeFieldFormat = "2006-01-02T15:04:05.999999999Z07:00"
+}
+
+func InitFile(path string) error {
+	fileMu.Lock()
+	defer fileMu.Unlock()
+
+	if file != nil {
+		return nil
+	}
+
+	dir := filepath.Dir(path)
+
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	logFile, err := os.OpenFile(
+		path,
+		os.O_CREATE|os.O_APPEND|os.O_WRONLY,
+		0644,
+	)
+	if err != nil {
+		return err
+	}
+
+	file = logFile
+	filePath = path
+
+	return nil
+}
+
+func WriteToFile(data []byte) error {
+	fileMu.Lock()
+	defer fileMu.Unlock()
+
+	if file == nil {
+		return nil
+	}
+
+	_, err := file.Write(data)
+
+	return err
+}
+
+func FilePath() string {
+	fileMu.Lock()
+	defer fileMu.Unlock()
+
+	return filePath
+}
+
+func CloseFile() error {
+	fileMu.Lock()
+	defer fileMu.Unlock()
+
+	if file == nil {
+		return nil
+	}
+
+	err := file.Close()
+
+	file = nil
+
+	return err
 }

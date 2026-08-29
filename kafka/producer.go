@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
+
+	"login/logger"
 
 	kafkago "github.com/segmentio/kafka-go"
 )
@@ -19,7 +22,20 @@ func NewProducer(brokers []string, topic string) *Producer {
 		Topic:        topic,
 		Balancer:     &kafkago.LeastBytes{},
 		RequiredAcks: kafkago.RequireOne,
-		Async:        false,
+		Async:        true,
+
+		Completion: func(
+			messages []kafkago.Message,
+			err error,
+		) {
+			if err != nil {
+				log := logger.New(os.Stderr)
+
+				log.Error().
+					Err(err).
+					Msg("failed to deliver kafka message")
+			}
+		},
 	}
 
 	return &Producer{
@@ -41,20 +57,32 @@ func (p *Producer) Publish(
 
 	message, err := json.Marshal(event)
 	if err != nil {
-		return fmt.Errorf("failed to marshal kafka event: %w", err)
+		return fmt.Errorf(
+			"failed to marshal kafka event: %w",
+			err,
+		)
 	}
 
-	err = p.writer.WriteMessages(
+	// Persist event to file.
+	if err := logger.WriteToFile(
+		append(message, '\n'),
+	); err != nil {
+		return fmt.Errorf(
+			"failed to write kafka event to log file: %w",
+			err,
+		)
+	}
+
+	// Async Kafka write.
+	if err := p.writer.WriteMessages(
 		ctx,
 		kafkago.Message{
 			Key:   []byte(eventType),
 			Value: message,
 		},
-	)
-
-	if err != nil {
+	); err != nil {
 		return fmt.Errorf(
-			"failed to publish kafka event %q: %w",
+			"failed to queue kafka event %q: %w",
 			eventType,
 			err,
 		)
@@ -69,17 +97,26 @@ func (p *Producer) PublishRaw(
 	message []byte,
 ) error {
 
-	err := p.writer.WriteMessages(
+	// Persist raw HTTP log to file.
+	if err := logger.WriteToFile(
+		append(message, '\n'),
+	); err != nil {
+		return fmt.Errorf(
+			"failed to write raw kafka event to log file: %w",
+			err,
+		)
+	}
+
+	// Async Kafka write.
+	if err := p.writer.WriteMessages(
 		ctx,
 		kafkago.Message{
 			Key:   []byte(eventType),
 			Value: message,
 		},
-	)
-
-	if err != nil {
+	); err != nil {
 		return fmt.Errorf(
-			"failed to publish raw kafka event %q: %w",
+			"failed to queue raw kafka event %q: %w",
 			eventType,
 			err,
 		)

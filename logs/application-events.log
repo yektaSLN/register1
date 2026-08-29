@@ -1,0 +1,39 @@
+{"level":"info","port":"8080","log_file":"C:/Users/PishroPardaz/Downloads/register-main/logs/application-events.log","time":"2026-08-25T14:32:57.1604353+03:30","message":"server is running"}
+{"type":"user.logged_in","timestamp":"2026-08-25T11:05:10.5858657Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":150,"time":"2026-08-25T14:35:10.5961109+03:30","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-08-25T11:05:15.0193031Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":141,"time":"2026-08-25T14:35:15.0228652+03:30","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-08-25T11:20:30.7575364Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":142,"time":"2026-08-25T14:50:30.7590494+03:30","message":"http request"}
+
+{"level":"info","port":"8080","log_file":"C:/Users/PishroPardaz/Downloads/register-main/logs/application-events.log","time":"2026-08-25T14:51:29.4617725+03:30","message":"server is running"}
+{"type":"user.logged_in","timestamp":"2026-08-25T11:21:53.9597353Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":146,"time":"2026-08-25T14:51:53.967687+03:30","message":"http request"}
+
+{"level":"info","port":"8080","log_file":"C:/Users/PishroPardaz/Downloads/register-main/logs/application-events.log","time":"2026-08-25T14:52:48.9634738+03:30","message":"server is running"}
+{"level":"info","port":"8080","log_file":"C:/Users/PishroPardaz/Downloads/register-main/logs/application-events.log","time":"2026-08-29T09:11:35.2601166+03:30","message":"server is running"}
+{"type":"user.logged_in","timestamp":"2026-08-29T07:53:28.1341943Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":273,"time":"2026-08-29T11:23:28.2086405+03:30","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-08-29T07:53:49.5389389Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":133,"time":"2026-08-29T11:23:49.540973+03:30","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-08-29T07:54:06.8886625Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":132,"time":"2026-08-29T11:24:06.8896617+03:30","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-08-29T07:54:40.5810497Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":154,"time":"2026-08-29T11:24:40.5820574+03:30","message":"http request"}
+
+{"level":"info","port":"8080","log_file":"C:/Users/PishroPardaz/Downloads/register-main/logs/application-events.log","time":"2026-08-29T11:39:58.4107156+03:30","message":"server is running"}
+{"type":"user.logged_in","timestamp":"2026-08-29T08:11:32.507485Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":141,"time":"2026-08-29T11:41:32.5164904+03:30","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-08-29T08:19:40.1070966Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":159,"time":"2026-08-29T11:49:40.1102913+03:30","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"POST","path":"/api/products","client_ip":"::1","status":400,"latency_ms":21,"user_id":14,"username":"mona","time":"2026-08-29T11:50:06.4881169+03:30","message":"http request"}
+
+{"level":"info","type":"http.request","method":"GET","path":"/api/products","client_ip":"::1","status":200,"latency_ms":43,"user_id":14,"username":"mona","time":"2026-08-29T11:50:16.1391913+03:30","message":"http request"}
+
