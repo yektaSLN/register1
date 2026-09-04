@@ -6,15 +6,19 @@ import (
 	"path/filepath"
 	"sync"
 
+	"time"
+
 	"github.com/rs/zerolog"
 )
 
 var (
-	file     *os.File
+	file *os.File
+	//for locking goroutines
 	fileMu   sync.Mutex
 	filePath string
 )
 
+// we build a logger so its output goes to stderr
 func New(writer io.Writer) zerolog.Logger {
 	return zerolog.New(writer).
 		With().
@@ -23,11 +27,24 @@ func New(writer io.Writer) zerolog.Logger {
 }
 
 func Configure() {
+	loc, err := time.LoadLocation("Asia/Tehran")
+	if err != nil {
+		panic(err)
+	}
+
 	zerolog.TimeFieldFormat = "2006-01-02T15:04:05.999999999Z07:00"
+	zerolog.TimestampFunc = func() time.Time {
+		return time.Now().In(loc)
+	}
 }
 
+// initializing the log file
 func InitFile(path string) error {
+
+	//until the file is still being changes no other goroutine is entered
 	fileMu.Lock()
+
+	//free mutex
 	defer fileMu.Unlock()
 
 	if file != nil {

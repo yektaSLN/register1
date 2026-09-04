@@ -37,3 +37,134 @@
 
 {"level":"info","type":"http.request","method":"GET","path":"/api/products","client_ip":"::1","status":200,"latency_ms":43,"user_id":14,"username":"mona","time":"2026-08-29T11:50:16.1391913+03:30","message":"http request"}
 
+{"level":"info","port":"8080","log_file":"C:/Users/PishroPardaz/Downloads/register-main/logs/application-events.log","time":"2026-09-01T14:53:36.1128399+03:30","message":"server is running"}
+{"type":"user.logged_in","timestamp":"2026-09-01T11:23:47.4199754Z","payload":{"user_id":14,"username":"mona"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"::1","status":200,"latency_ms":174,"time":"2026-09-01T14:53:47.4542945+03:30","message":"http request"}
+
+{"level":"info","type":"http.request","method":"GET","path":"/api/products","client_ip":"::1","status":200,"latency_ms":3,"user_id":14,"username":"mona","time":"2026-09-01T14:54:44.71772+03:30","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"GET","path":"/api/products/export","client_ip":"::1","status":401,"latency_ms":2,"time":"2026-09-01T14:54:53.9172377+03:30","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"GET","path":"/api/products/export","client_ip":"::1","status":401,"latency_ms":0,"time":"2026-09-01T14:55:13.3703654+03:30","message":"http request"}
+
+{"level":"info","type":"http.request","method":"GET","path":"/api/products/export","client_ip":"::1","status":200,"latency_ms":14,"user_id":14,"username":"mona","time":"2026-09-01T14:56:11.5523571+03:30","message":"http request"}
+
+{"level":"info","type":"http.request","method":"GET","path":"/api/products/export","client_ip":"::1","status":200,"latency_ms":5,"user_id":14,"username":"mona","time":"2026-09-01T14:56:14.7817741+03:30","message":"http request"}
+
+{"level":"info","port":"8080","log_file":"/tmp/register1-logs/application-events.log","time":"2026-09-01T08:35:30.310682668Z","message":"server is running"}
+{"level":"warn","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":401,"latency_ms":5,"time":"2026-09-01T08:38:59.722307361Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":401,"latency_ms":2,"time":"2026-09-01T08:39:06.931681436Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"GET","path":"/","client_ip":"172.18.0.1","status":404,"latency_ms":0,"time":"2026-09-01T08:39:43.226991194Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"GET","path":"/api/login","client_ip":"172.18.0.1","status":404,"latency_ms":0,"time":"2026-09-01T08:40:49.090404046Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":401,"latency_ms":2,"time":"2026-09-01T08:42:49.70171326Z","message":"http request"}
+
+{"type":"user.registered","timestamp":"2026-09-01T08:47:31.912642218Z","payload":{"age":23,"email":"mani@gmail.com","id":3,"phone":"09888888888","username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/register","client_ip":"172.18.0.1","status":201,"latency_ms":145,"time":"2026-09-01T08:47:31.915212859Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-01T08:47:46.765747394Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":132,"time":"2026-09-01T08:47:46.767942001Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"POST","path":"/api/products","client_ip":"172.18.0.1","status":401,"latency_ms":0,"time":"2026-09-01T08:48:44.608159091Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"POST","path":"/api/products","client_ip":"172.18.0.1","status":400,"latency_ms":4,"user_id":3,"username":"mani","time":"2026-09-01T08:48:59.532764396Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"POST","path":"/api/products","client_ip":"172.18.0.1","status":400,"latency_ms":1,"user_id":3,"username":"mani","time":"2026-09-01T08:50:03.532438633Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"POST","path":"/api/products","client_ip":"172.18.0.1","status":401,"latency_ms":0,"time":"2026-09-01T08:50:09.008551267Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-01T08:50:41.129727558Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":92,"time":"2026-09-01T08:50:41.132004361Z","message":"http request"}
+
+{"type":"product.created","timestamp":"2026-09-01T08:51:07.70869148Z","payload":{"id":1,"name":"book","price":3333,"user_id":3}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/products","client_ip":"172.18.0.1","status":201,"latency_ms":9,"user_id":3,"username":"mani","time":"2026-09-01T08:51:07.710457317Z","message":"http request"}
+
+{"level":"info","type":"http.request","method":"GET","path":"/api/products","client_ip":"172.18.0.1","status":200,"latency_ms":1,"user_id":3,"username":"mani","time":"2026-09-01T08:51:20.384144094Z","message":"http request"}
+
+{"level":"info","type":"http.request","method":"GET","path":"/api/products/export","client_ip":"172.18.0.1","status":200,"latency_ms":6,"user_id":3,"username":"mani","time":"2026-09-01T08:51:31.548820949Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-01T09:23:55.086041307Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":102,"time":"2026-09-01T09:23:55.089606036Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-01T09:35:34.78572538Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":126,"time":"2026-09-01T09:35:34.794391542Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-01T09:39:19.702090122Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":114,"time":"2026-09-01T09:39:19.707938165Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-01T09:47:02.995072196Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":99,"time":"2026-09-01T09:47:02.999505017Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-01T09:47:22.980560371Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":99,"time":"2026-09-01T09:47:22.984017144Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-01T09:49:23.958084008Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":92,"time":"2026-09-01T09:49:23.960682859Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-01T11:34:24.176676809Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":144,"time":"2026-09-01T11:34:24.180262492Z","message":"http request"}
+
+{"level":"info","port":"8080","log_file":"/tmp/register1-logs/application-events.log","time":"2026-09-03T08:37:49.868865999Z","message":"server is running"}
+{"type":"user.logged_in","timestamp":"2026-09-03T08:40:35.278493923Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":128,"time":"2026-09-03T08:40:35.286268661Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T09:10:57.419798053Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":102,"time":"2026-09-02T09:10:57.423215438Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T09:39:16.318893248Z","payload":{"user_id":3,"username":"mani"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":182,"time":"2026-09-02T09:39:16.321010092Z","message":"http request"}
+
+{"type":"user.registered","timestamp":"2026-09-02T09:41:44.704252429Z","payload":{"age":23,"email":"manii@gmail.com","id":4,"phone":"09999999999","username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/register","client_ip":"172.18.0.1","status":201,"latency_ms":141,"time":"2026-09-02T09:41:44.705948679Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"POST","path":"/api/register","client_ip":"172.18.0.1","status":409,"latency_ms":8,"time":"2026-09-02T10:08:10.968904845Z","message":"http request"}
+
+{"level":"warn","type":"http.request","method":"POST","path":"/api/register","client_ip":"172.18.0.1","status":409,"latency_ms":2,"time":"2026-09-02T10:08:25.66613052Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T10:09:07.887778026Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":93,"time":"2026-09-02T10:09:07.890485256Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T10:16:39.257980235Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":114,"time":"2026-09-02T10:16:39.260171253Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T10:20:40.719098475Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":95,"time":"2026-09-02T10:20:40.720943796Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T10:22:50.006220093Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":105,"time":"2026-09-02T10:22:50.008827023Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T10:25:57.255574655Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":87,"time":"2026-09-02T10:25:57.258667946Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T10:53:56.111160285Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":78,"time":"2026-09-02T10:53:56.112469781Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T11:00:02.192111101Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":79,"time":"2026-09-02T11:00:02.19335677Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T11:00:50.39935864Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":74,"time":"2026-09-02T11:00:50.400760226Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T11:03:10.315784612Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":78,"time":"2026-09-02T11:03:10.317669152Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T11:03:58.272649033Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":72,"time":"2026-09-02T11:03:58.274022768Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T11:06:43.066362379Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":86,"time":"2026-09-02T11:06:43.067685269Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T11:11:17.967655328Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":77,"time":"2026-09-02T11:11:17.969944622Z","message":"http request"}
+
+{"type":"user.logged_in","timestamp":"2026-09-02T11:13:43.471503485Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":73,"time":"2026-09-02T11:13:43.472953618Z","message":"http request"}
+
+{"level":"info","port":"8080","log_file":"/tmp/register1-logs/application-events.log","time":"2026-09-02T11:15:46.368477241Z","message":"server is running"}
+{"level":"info","port":"8080","log_file":"/tmp/register1-logs/application-events.log","time":"2026-09-04T19:53:57.381257632Z","message":"server is running"}
+{"type":"user.logged_in","timestamp":"2026-09-04T19:54:16.696550192Z","payload":{"user_id":4,"username":"manii"}}
+{"level":"info","type":"http.request","method":"POST","path":"/api/login","client_ip":"172.18.0.1","status":200,"latency_ms":231,"time":"2026-09-04T19:54:16.763789958Z","message":"http request"}
+
